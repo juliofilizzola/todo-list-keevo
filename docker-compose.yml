@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: todo_list_backend
+    build:
+      dockerfile: Dockerfile
+    restart: always
+    tty: true
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    external_links:
+      - db
+
+  db:
+    container_name: todo_list_db
+    image: postgres:9-alpine
+    restart: always
+    tty: true
+    environment:
+      POSTGRES_USER: todo_list
+      POSTGRES_PASSWORD: todo-123456
+      POSTGRES_DB: todo_list_local
+    ports:
+      - "5432:5432"
+
+  react-app:
+    container_name: todo-list-front
+    image: node:latest
+    build:
+      context: ./todo-list-front
+      dockerfile: Dockerfile
+    volumes:
+      - .:/react-vite-app
+    working_dir: /react-vite-app
+    command: bash -c "cd todo-list-front && yarn install && yarn run dev"
+    ports:
+      - "4000:4000"
+    depends_on:
+      - app
+      - db
